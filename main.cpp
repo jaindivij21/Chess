@@ -18,7 +18,9 @@ int main(){
     cin>>name2; 
     p2Color = (p1Color=='W')?'B':'W';
     
+    cout<<"\n\n\n";
     initializeBoard();
+    printBoard();
 
     getch();
   
