@@ -22,6 +22,7 @@ void move();
 void alternateTurn();
 int allowPlay();
 int isItCheckMate();
+bool validityOfMove();
 
 void extractArrayPos(string piece, char file, int rank);
 int rowIndex = 0;
@@ -253,26 +254,54 @@ void move()
     char oldPositionFile;
     int oldPositionRank;
     
-    do{
-        cout << "Enter the piece to move" << endl;
-        cin >> pieceToMove;
-        cout << "Enter its old position" << endl;
-        cin >> oldPositionFile >> oldPositionRank;
+    do
+    {
+        do
+        {
+            cout << "Enter the ";
+            if (turnOf == 0)
+            {
+                cout << "White";
+            }
+            else
+            {
+                cout << "Black";
+            }
+            cout << " piece to move" << endl;
+            cin >> pieceToMove;
+            cout << "Enter its old position" << endl;
+            cin >> oldPositionFile >> oldPositionRank;
 
-        extractArrayPos(oldPositionFile, oldPositionRank);
-        if((turnOf==0 && chessBoard[rowIndex][columnIndex].color=='W') || (turnOf==1 && chessBoard[rowIndex][columnIndex].color=='B')){
+            extractArrayPos(oldPositionFile, oldPositionRank);
+            if ((turnOf == 0 && chessBoard[rowIndex][columnIndex].color == 'W') || (turnOf == 1 && chessBoard[rowIndex][columnIndex].color == 'B'))
+            {
+                break;
+            }
+            else
+            {
+                cout << "ERROR! Move the piece of your colour"
+                     << "\n\n"
+                     << endl;
+            }
+
+        } while (true);
+
+        cout << "Enter new position" << endl;
+        cin >> newPositionFile >> newPositionRank;
+
+        // check the validity of the move
+        bool ifValid = validityOfMove();
+        if (ifValid == true)
+        {
             break;
         }
         else
         {
-            cout<<"ERROR! Move the piece of your colour"<<"\n\n"<<endl;
+            cout << "ERROR! Not a valid Move"
+                 << "\n\n"
+                 << endl;
         }
-        
-    }while(true);
-    
-
-    cout << "Enter new position" << endl;
-    cin >> newPositionFile >> newPositionRank;
+    } while (true);
 
     extractArrayPos(oldPositionFile, oldPositionRank);
     char tempColor = chessBoard[rowIndex][columnIndex].color;
@@ -306,8 +335,16 @@ int allowPlay()
 }
 
 // TO DO
-//check for check mate 
-int isItCheckMate(){
+// check for validity
+bool validityOfMove()
+{
+    return true;
+}
+
+// TO DO
+//check for check mate
+int isItCheckMate()
+{
     return 0;
 }
 
