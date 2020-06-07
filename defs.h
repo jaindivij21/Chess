@@ -267,9 +267,9 @@ void move()
             {
                 cout << "Black";
             }
-            cout << " piece to move" << endl;
+            cout << " piece to move (e.g. 'bP')" << endl;
             cin >> pieceToMove;
-            cout << "Enter its old position" << endl;
+            cout << "Enter its old position (e.g. 'D 3')" << endl;
             cin >> oldPositionFile >> oldPositionRank;
 
             extractArrayPos(oldPositionFile, oldPositionRank);
@@ -286,7 +286,7 @@ void move()
 
         } while (true);
 
-        cout << "Enter new position" << endl;
+        cout << "Enter new position (e.g. 'D 5')" << endl;
         cin >> newPositionFile >> newPositionRank;
 
         // check the validity of the move

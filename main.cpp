@@ -12,9 +12,9 @@ int main(){
     string name1, name2;
     char p1Color, p2Color;
 
-    cout<<"Enter player 1 name & Colour (W/B)"<<endl;
+    cout<<"Enter player 1 name & Colour (W/B) (e.g. 'Divij W')"<<endl;
     cin>>name1>>p1Color;
-    cout<<"Enter player 2 name"<<endl;
+    cout<<"Enter player 2 name (e.g. 'Deepak')"<<endl;
     cin>>name2;
     p2Color = (p1Color=='W')?'B':'W';
 
