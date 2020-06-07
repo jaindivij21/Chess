@@ -15,13 +15,11 @@ int main(){
     cout<<"Enter player 1 name & Colour (W/B)"<<endl;
     cin>>name1>>p1Color;
     cout<<"Enter player 2 name"<<endl;
-    cin>>name2; 
+    cin>>name2;
     p2Color = (p1Color=='W')?'B':'W';
-    
-    cout<<"\n\n\n";
-    initializeBoard();
-    printBoard();
 
+    cout<<"\n\n\n";
+
+    playGame();
     getch();
-  
 }
