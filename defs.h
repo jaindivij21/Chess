@@ -5,20 +5,27 @@
 #ifndef CHESS_PROJECT_DEFS_H
 #define CHESS_PROJECT_DEFS_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <conio.h>
 
 using namespace std;
 
+// global varaibles
+int totalMoves = 0;
+int turnOf = 0; // 0 = white && 1 = black
+
 // initializing functions
 void initializeBoard();
 void printBoard();
 void move();
+void alternateTurn();
+int allowPlay();
+int isItCheckMate();
 
 void extractArrayPos(string piece, char file, int rank);
-int rowIndex=0;
-int columnIndex=0;
+int rowIndex = 0;
+int columnIndex = 0;
 
 void playGame();
 
@@ -217,25 +224,55 @@ void printBoard()
          << endl;
 }
 
+// extracting the array index from given file and rank of a chessboard
 void extractArrayPos(char file, int rank)
 {
     // e.g A 1 == rowIndex = 0 & columnIndex = 0
     rowIndex = rank - 1;
     columnIndex = file - 65;
-    cout<<rowIndex<<" "<<columnIndex<<endl;
 }
 
+// change turn after every ply
+void alternateTurn()
+{
+    if (totalMoves == 0)
+        turnOf = 0;
+    else
+        turnOf = !turnOf;
+}
+
+// function to execute move from one location to another
 void move()
 {
+
+    alternateTurn();
+
     string pieceToMove;
     char newPositionFile;
     int newPositionRank;
     char oldPositionFile;
     int oldPositionRank;
-    cout << "Enter the piece to move, its old postion & the new location" << endl;
-    cin >> pieceToMove >> oldPositionFile >> oldPositionRank >> newPositionFile >> newPositionRank;
-    //cout << "to";
+    
+    do{
+        cout << "Enter the piece to move" << endl;
+        cin >> pieceToMove;
+        cout << "Enter its old position" << endl;
+        cin >> oldPositionFile >> oldPositionRank;
 
+        extractArrayPos(oldPositionFile, oldPositionRank);
+        if((turnOf==0 && chessBoard[rowIndex][columnIndex].color=='W') || (turnOf==1 && chessBoard[rowIndex][columnIndex].color=='B')){
+            break;
+        }
+        else
+        {
+            cout<<"ERROR! Move the piece of your colour"<<"\n\n"<<endl;
+        }
+        
+    }while(true);
+    
+
+    cout << "Enter new position" << endl;
+    cin >> newPositionFile >> newPositionRank;
 
     extractArrayPos(oldPositionFile, oldPositionRank);
     char tempColor = chessBoard[rowIndex][columnIndex].color;
@@ -253,24 +290,42 @@ void move()
     chessBoard[rowIndex][columnIndex].ifPresent = false;
     chessBoard[rowIndex][columnIndex].file = oldPositionFile;
     chessBoard[rowIndex][columnIndex].rank = oldPositionRank;
+
+    totalMoves++;
 }
 
+// checks for the conditions reqd to play the game; if not satisfied game-over
+int allowPlay()
+{
+    if (totalMoves == 100)
+        return 0;
+    else if (isItCheckMate())
+        return 0;
+    else
+        return 1;
+}
+
+// TO DO
+//check for check mate 
+int isItCheckMate(){
+    return 0;
+}
+
+// MAIN FUNCTION
 void playGame()
 {
+    // initialize the board
     initializeBoard();
     printBoard();
-    int movepiece = 0;
-    while (movepiece!=-1)
+
+    // test conditions if the game is over or not
+    while (allowPlay())
     {
         move();
         printBoard();
-        cout<<"To move enter 1 else enter -1"<<endl;
-        cin>>movepiece;
     }
+
+    cout << "Thanks for playing" << endl;
 }
-
-
-
-
 
 #endif //CHESS_PROJECT_DEFS_H
