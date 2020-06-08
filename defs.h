@@ -22,7 +22,7 @@ void move();
 void alternateTurn();
 int allowPlay();
 int isItCheckMate();
-bool validityOfMove();
+bool validityOfMove(int rank, int file);
 
 void extractArrayPos(string piece, char file, int rank);
 int rowIndex = 0;
@@ -288,9 +288,10 @@ void move()
 
         cout << "Enter new position (e.g. 'D 5')" << endl;
         cin >> newPositionFile >> newPositionRank;
+        extractArrayPos(newPositionFile, newPositionRank);  // rowIndex columnIndex
 
         // check the validity of the move
-        bool ifValid = validityOfMove();
+        bool ifValid = validityOfMove(rowIndex, columnIndex);
         if (ifValid == true)
         {
             break;
@@ -336,9 +337,13 @@ int allowPlay()
 
 // TO DO
 // check for validity
-bool validityOfMove()
+bool validityOfMove(int rank, int file)
 {
-    return true;
+    if ((rank >=0 && rank<=7)&&(file>=0&&file<=7))
+        return true;
+    else
+        return false;
+    
 }
 
 // TO DO
