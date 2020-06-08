@@ -20,11 +20,12 @@ void initializeBoard();
 void printBoard();
 void move();
 void alternateTurn();
+bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile);
 int allowPlay();
 int isItCheckMate();
-bool validityOfMove(int rank, int file);
+bool validityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
-void extractArrayPos(string piece, char file, int rank);
+void extractArrayPos(char file, int rank);
 int rowIndex = 0;
 int columnIndex = 0;
 
@@ -253,7 +254,7 @@ void move()
     int newPositionRank;
     char oldPositionFile;
     int oldPositionRank;
-    
+
     do
     {
         do
@@ -288,11 +289,12 @@ void move()
 
         cout << "Enter new position (e.g. 'D 5')" << endl;
         cin >> newPositionFile >> newPositionRank;
-        extractArrayPos(newPositionFile, newPositionRank);  // rowIndex columnIndex
+        extractArrayPos(newPositionFile, newPositionRank); // rowIndex columnIndex
 
         // check the validity of the move
-        bool ifValid = validityOfMove(rowIndex, columnIndex);
-        if (ifValid == true)
+        bool ifValid1 = validityOfMove(rowIndex, columnIndex, oldPositionRank, oldPositionFile);
+        bool ifValid2 = statusOfNewPos(rowIndex, columnIndex, oldPositionRank, oldPositionFile);
+        if (ifValid1 == true && ifValid2 == true)
         {
             break;
         }
@@ -304,7 +306,7 @@ void move()
         }
     } while (true);
 
-    extractArrayPos(oldPositionFile, oldPositionRank);
+    extractArrayPos(oldPositionFile, oldPositionRank); ///////////////////////////////////////////// can be removed
     char tempColor = chessBoard[rowIndex][columnIndex].color;
 
     extractArrayPos(newPositionFile, newPositionRank);
@@ -324,6 +326,26 @@ void move()
     totalMoves++;
 }
 
+// function to move from one location to another and cut the piece of opposite colour
+bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile)
+{
+
+    // check the status of new position
+    if (chessBoard[newRank][newFile].ifPresent == false) // its empty
+        return true;
+    else // it isnt empty
+    {
+        extractArrayPos(oldFile, oldRank);
+        if (chessBoard[newRank][newFile].color == chessBoard[rowIndex][columnIndex].color) // it is the same colour as the piece you are moving
+        {
+            cout << "Your  piece already present there!" << endl;
+            return false;
+        }
+        else // its not the same colour which means it can cut the other piece
+            return true;
+    }
+}
+
 // checks for the conditions reqd to play the game; if not satisfied game-over
 int allowPlay()
 {
@@ -335,15 +357,18 @@ int allowPlay()
         return 1;
 }
 
-// TO DO
 // check for validity
-bool validityOfMove(int rank, int file)
+bool validityOfMove(int newRank, int newFile, int oldRank, char oldFile)
 {
-    if ((rank >=0 && rank<=7)&&(file>=0&&file<=7))
+    // check if the new postion is not outside the array
+    if ((newRank >= 0 && newRank <= 7) && (newFile >= 0 && newFile <= 7))
         return true;
     else
+    {
+        cout<<"The move is Out Of Bounds!"<<endl;
         return false;
-    
+    }
+    // check the legality of a move
 }
 
 // TO DO
