@@ -20,6 +20,6 @@ int main(){
 
     cout<<"\n\n\n";
 
-    playGame();
+    playGame(name1, name2, p1Color, p2Color);
     getch();
 }

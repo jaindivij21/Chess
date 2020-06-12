@@ -15,7 +15,15 @@ using namespace std;
 // global variables
 int totalMoves = 0;
 int turnOf = 0; // 0 = white && 1 = black
+string tempPiece;
+char nameOfThePiece;
+int a, b;
+int rowDelta, colDelta;
+int columnOffset;
+int rowOffset;
+char whatColour;
 
+int tempVariable;
 
 // initializing functions
 void initializeBoard();
@@ -24,19 +32,25 @@ void printBoard();
 
 void move();
 
-void alternateTurn();
+char alternateTurn();
 
 bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile);
 
-bool allowPlay();
+int allowPlay();
 
 bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
 bool isItCheckMate();
 
-bool validityOfMove(int newRank, int newFile, int oldRank, char oldFile);
+bool isItStaleMate();
+
+int validityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
 void extractArrayPos(char file, int rank);
+
+bool canMove(char color);
+
+bool isItCheck(char color);
 
 int rowIndex = 0;
 int columnIndex = 0;
@@ -45,10 +59,11 @@ int biggerColumnIndex;
 int smallerRowIndex;
 int smallerColumnIndex;
 
-void playGame();
+void playGame(string player1, string player2, char player1color, char player2color);
 
 //structure for a piece for every square on the board
-struct piece {
+struct piece
+{
     string name;
     char color;
     char file;
@@ -60,7 +75,8 @@ struct piece {
 piece chessBoard[8][8];
 
 // board initialization
-void initializeBoard() {
+void initializeBoard()
+{
 
     // black
     chessBoard[0][0].name = "bR";
@@ -111,8 +127,10 @@ void initializeBoard() {
     chessBoard[0][7].rank = 1;
     chessBoard[0][7].ifPresent = true;
 
-    for (int i = 1; i < 2; i++) {
-        for (int j = 0; j < 8; j++) {
+    for (int i = 1; i < 2; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
             char temp = 65 + j;
             chessBoard[i][j].name = "bP";
             chessBoard[i][j].color = 'B';
@@ -171,8 +189,10 @@ void initializeBoard() {
     chessBoard[7][7].rank = 8;
     chessBoard[7][7].ifPresent = true;
 
-    for (int i = 6; i < 7; i++) {
-        for (int j = 0; j < 8; j++) {
+    for (int i = 6; i < 7; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
             char temp = 65 + j;
             chessBoard[i][j].name = "wP";
             chessBoard[i][j].color = 'W';
@@ -183,8 +203,10 @@ void initializeBoard() {
     }
 
     // making ifPresent as false for all the other squares and printing -- there
-    for (int i = 2; i < 6; i++) {
-        for (int j = 0; j < 8; j++) {
+    for (int i = 2; i < 6; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
             chessBoard[i][j].ifPresent = false;
             chessBoard[i][j].name = "--";
         }
@@ -192,162 +214,173 @@ void initializeBoard() {
 }
 
 // printing the chess board on the console
-void printBoard() {
+void printBoard()
+{
     cout
-            << "                             A                       B                       C                       D                       E                       F                       G                       H             "
-            << "\n"
-            << endl;
+        << "                             A                       B                       C                       D                       E                       F                       G                       H             "
+        << "\n"
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         1       #          " << chessBoard[0][0].name << "           #          " << chessBoard[0][1].name
          << "           #          " << chessBoard[0][2].name << "           #          " << chessBoard[0][3].name
          << "           #          " << chessBoard[0][4].name << "           #          " << chessBoard[0][5].name
          << "           #          " << chessBoard[0][6].name << "           #          " << chessBoard[0][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         2       #          " << chessBoard[1][0].name << "           #          " << chessBoard[1][1].name
          << "           #          " << chessBoard[1][2].name << "           #          " << chessBoard[1][3].name
          << "           #          " << chessBoard[1][4].name << "           #          " << chessBoard[1][5].name
          << "           #          " << chessBoard[1][6].name << "           #          " << chessBoard[1][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         3       #          " << chessBoard[2][0].name << "           #          " << chessBoard[2][1].name
          << "           #          " << chessBoard[2][2].name << "           #          " << chessBoard[2][3].name
          << "           #          " << chessBoard[2][4].name << "           #          " << chessBoard[2][5].name
          << "           #          " << chessBoard[2][6].name << "           #          " << chessBoard[2][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         4       #          " << chessBoard[3][0].name << "           #          " << chessBoard[3][1].name
          << "           #          " << chessBoard[3][2].name << "           #          " << chessBoard[3][3].name
          << "           #          " << chessBoard[3][4].name << "           #          " << chessBoard[3][5].name
          << "           #          " << chessBoard[3][6].name << "           #          " << chessBoard[3][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         5       #          " << chessBoard[4][0].name << "           #          " << chessBoard[4][1].name
          << "           #          " << chessBoard[4][2].name << "           #          " << chessBoard[4][3].name
          << "           #          " << chessBoard[4][4].name << "           #          " << chessBoard[4][5].name
          << "           #          " << chessBoard[4][6].name << "           #          " << chessBoard[4][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         6       #          " << chessBoard[5][0].name << "           #          " << chessBoard[5][1].name
          << "           #          " << chessBoard[5][2].name << "           #          " << chessBoard[5][3].name
          << "           #          " << chessBoard[5][4].name << "           #          " << chessBoard[5][5].name
          << "           #          " << chessBoard[5][6].name << "           #          " << chessBoard[5][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         7       #          " << chessBoard[6][0].name << "           #          " << chessBoard[6][1].name
          << "           #          " << chessBoard[6][2].name << "           #          " << chessBoard[6][3].name
          << "           #          " << chessBoard[6][4].name << "           #          " << chessBoard[6][5].name
          << "           #          " << chessBoard[6][6].name << "           #          " << chessBoard[6][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout << "         8       #          " << chessBoard[7][0].name << "           #          " << chessBoard[7][1].name
          << "           #          " << chessBoard[7][2].name << "           #          " << chessBoard[7][3].name
          << "           #          " << chessBoard[7][4].name << "           #          " << chessBoard[7][5].name
          << "           #          " << chessBoard[7][6].name << "           #          " << chessBoard[7][7].name
          << "           #  " << endl;
     cout
-            << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
-            << endl;
+        << "                 #                       #                       #                       #                       #                       #                       #                       #                       # "
+        << endl;
     cout
-            << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
-            << endl;
+        << "                 #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   # "
+        << endl;
     cout << "\n\n"
          << endl;
 }
 
 // extracting the array index from given file and rank of a chessboard
-void extractArrayPos(char file, int rank) {
+void extractArrayPos(char file, int rank)
+{
     // e.g A 1 == rowIndex = 0 & columnIndex = 0
     rowIndex = rank - 1;
     columnIndex = file - 65;
 }
 
 // change turn after every ply
-void alternateTurn() {
+char alternateTurn()
+{
     if (totalMoves == 0)
         turnOf = 0;
     else
         turnOf = !turnOf;
+
+    if (turnOf == 0)
+        return 'W';
+    else
+        return 'B';
 }
 
 // function to execute move from one location to another
-void move() {
-
-    alternateTurn();
-
+void move()
+{
     string pieceToMove;
     char newPositionFile;
     int newPositionRank;
     char oldPositionFile;
     int oldPositionRank;
 
-    do {
-        do {
+    do
+    {
+        do
+        {
             cout << "Enter the ";
-            if (turnOf == 0) {
+            if (turnOf == 0)
+            {
                 cout << "White";
-            } else {
+            }
+            else
+            {
                 cout << "Black";
             }
             cout << " piece to move (e.g. 'bP')" << endl;
@@ -357,15 +390,19 @@ void move() {
 
             extractArrayPos(oldPositionFile, oldPositionRank);
             if ((turnOf == 0 && chessBoard[rowIndex][columnIndex].color == 'W') ||
-                (turnOf == 1 && chessBoard[rowIndex][columnIndex].color == 'B')) {
-                if (chessBoard[rowIndex][columnIndex].name != pieceToMove) {
+                (turnOf == 1 && chessBoard[rowIndex][columnIndex].color == 'B'))
+            {
+                if (chessBoard[rowIndex][columnIndex].name != pieceToMove)
+                {
                     cout << "ERROR! Input Position doesnt match with the piece!"
                          << "\n\n"
                          << endl;
                     continue;
                 }
                 break;
-            } else {
+            }
+            else
+            {
                 cout << "ERROR! Move the piece of your colour"
                      << "\n\n"
                      << endl;
@@ -378,13 +415,28 @@ void move() {
         extractArrayPos(newPositionFile, newPositionRank); // rowIndex columnIndex
 
         // check the validity of the move and status of destination square
-        bool ifValid1 = validityOfMove(rowIndex, columnIndex, oldPositionRank, oldPositionFile);
         bool ifValid2 = statusOfNewPos(rowIndex, columnIndex, oldPositionRank, oldPositionFile);
-
+        if (ifValid2 == false)
+        {
+            cout << "Your  piece already present there!" << endl;
+        }
+        extractArrayPos(newPositionFile, newPositionRank);
+        int ifValid1 = validityOfMove(rowIndex, columnIndex, oldPositionRank, oldPositionFile);
+        if (ifValid1 == 0)
+        {
+            cout << "ERROR! This move is not legal!" << endl;
+        }
+        if (ifValid1 == -1)
+        {
+            cout << "ERROR! The move is Out Of Bounds!" << endl;
+        }
         // only proceed to moving if the move is valid(inside the chessboard), legal(regarding the specific pieces) and status of destinaiton is ok(its either empty or piece of other color is present)
-        if (ifValid1 && ifValid2) {
+        if (ifValid1 && ifValid2)
+        {
             break;
-        } else {
+        }
+        else
+        {
             cout << "ERROR! Not a valid Move"
                  << "\n\n"
                  << endl;
@@ -412,7 +464,8 @@ void move() {
 }
 
 // function to move from one location to another and cut the piece of opposite colour
-bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile) {
+bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile)
+{
 
     // check the status of new position
     if (!chessBoard[newRank][newFile].ifPresent) // its empty
@@ -423,63 +476,74 @@ bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile) {
         if (chessBoard[newRank][newFile].color ==
             chessBoard[rowIndex][columnIndex].color) // it is the same colour as the piece you are moving
         {
-            cout << "Your  piece already present there!" << endl;
             return false;
-        } else // its not the same colour which means it can cut the other piece
+        }
+        else // its not the same colour which means it can cut the other piece
             return true;
     }
 }
 
 // checks for the conditions required to play the game; if not satisfied game-over
-bool allowPlay() {
+int allowPlay()
+{
     if (totalMoves == 100)
-        return false;
+        return -1;
     else if (isItCheckMate() == true)
-        return false;
+        return 0;
+    else if (isItStaleMate() == true)
+        return 2;
     else
-        return true;
+        return 1;
 }
 
 // check for validity
-bool validityOfMove(int newRank, int newFile, int oldRank, char oldFile) {
+int validityOfMove(int newRank, int newFile, int oldRank, char oldFile)
+{
     // check if the new position is not outside the array
-    if ((newRank >= 0 && newRank <= 7) && (newFile >= 0 && newFile <= 7)) {
+    if ((newRank >= 0 && newRank <= 7) && (newFile >= 0 && newFile <= 7))
+    {
         // if yes, then check for the legality of the move
         if (legalityOfMove(newRank, newFile, oldRank, oldFile))
-            return true;
-        else {
-            cout << "ERROR! This move is not legal!" << endl;
-            return false;
+            return 1;
+        else
+        {
+            return 0;
         }
-    } else {
-        cout << "ERROR! The move is Out Of Bounds!" << endl;
-        return false;
+    }
+    else
+    {
+        return -1;
     }
 }
 
 // checking the legality of the move wrt to the piece's rules and also check if something is blocking the way
-bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile) {
+bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
+{
     extractArrayPos(oldFile, oldRank); // NOW newRank, newFile, rowIndex, columnIndex
-    string tempPiece = (chessBoard[rowIndex][columnIndex].name);
+    tempPiece = (chessBoard[rowIndex][columnIndex].name);
 
-    char nameOfThePiece;
-
-    if (tempPiece == "wP" || tempPiece == "bP") {
+    if (tempPiece == "wP" || tempPiece == "bP")
+    {
         nameOfThePiece = 'P';
     }
-    if (tempPiece == "wR" || tempPiece == "bR") {
+    if (tempPiece == "wR" || tempPiece == "bR")
+    {
         nameOfThePiece = 'R';
     }
-    if (tempPiece == "wH" || tempPiece == "bH") {
+    if (tempPiece == "wH" || tempPiece == "bH")
+    {
         nameOfThePiece = 'H';
     }
-    if (tempPiece == "wB" || tempPiece == "bB") {
+    if (tempPiece == "wB" || tempPiece == "bB")
+    {
         nameOfThePiece = 'B';
     }
-    if (tempPiece == "wQ" || tempPiece == "bQ") {
+    if (tempPiece == "wQ" || tempPiece == "bQ")
+    {
         nameOfThePiece = 'Q';
     }
-    if (tempPiece == "wK" || tempPiece == "bK") {
+    if (tempPiece == "wK" || tempPiece == "bK")
+    {
         nameOfThePiece = 'K';
     }
 
@@ -488,221 +552,426 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile) {
     smallerRowIndex = min(rowIndex, newRank);
     smallerColumnIndex = min(columnIndex, newFile);
 
-    switch (nameOfThePiece) {
-        // legality of pawns
-        case 'P':
+    switch (nameOfThePiece)
+    {
+
+    // legality of pawns
+    case 'P':
+        if (chessBoard[rowIndex][columnIndex].color == 'W')
+        {
             // if pawn is moving to an empty space; it can only move one space forward
-            if (!chessBoard[newRank][newFile].ifPresent) {
-                return newRank == rowIndex - 1 && newFile == columnIndex;
+            if (chessBoard[newRank][newFile].ifPresent == false)
+            {
+                if (newRank == rowIndex - 1 && newFile == columnIndex)
+                    return true;
+                else
+                    return false;
             }
-                // if pawn wants to cut someone
-            else {
-                return (newRank == rowIndex - 1 && newFile == columnIndex - 1) ||
-                       (newRank == rowIndex - 1 && newFile == columnIndex + 1);
-            }
-            break;
-
-            // legality of Rooks
-        case 'R':
-            // Rook moves in the same row
-            if (newRank == rowIndex) {
-                // now check if all the squares in bw source and destination are empty
-                int columnOffset = newFile - columnIndex;
-                for (int i = 0; i < columnOffset; i++) {
-                    if (chessBoard[newRank][columnIndex + i].ifPresent)
+            // if pawn wants to cut someone
+            else
+            {
+                if (newRank == rowIndex - 1)
+                {
+                    if (newFile == columnIndex - 1 || newFile == columnIndex + 1)
+                        return true;
+                    else
                         return false;
                 }
-                return true;
+                else
+                    return false;
             }
-                // rook moves in the same column
-            else if (newFile == columnIndex) {
-                // now check if all the squares in bw source and destinations are empty
-                int rowOffset = newFile - columnIndex;
-                for (int i = 0; i < rowOffset; i++) {
-                    if (chessBoard[rowIndex + i][newFile].ifPresent)
-                        return false;
-                }
-                return true;
-            } else
-                return false;
-
-            break;
-
-            // legality of Horse
-        case 'H':
-            // for horse we dont need to check the path towards the destination square
-            // also we already have checked if the destination square is empty or not using statusOfNewPos Function
-
-            // it moves one column and two rows away
-            if ((columnIndex == newFile + 1) || (columnIndex == newFile - 1)) {
-                if ((rowIndex == newRank + 2) || (rowIndex == newRank - 2)) {
+        }
+        if (chessBoard[rowIndex][columnIndex].color == 'B')
+        {
+            // if pawn is moving to an empty space; it can only move one space forward
+            if (chessBoard[newRank][newFile].ifPresent == false)
+            {
+                if (newRank == rowIndex + 1 && newFile == columnIndex)
                     return true;
-                }
+                else
+                    return false;
             }
-
-            // it moves one row and two columns away
-            if ((columnIndex == newFile + 2) || (columnIndex == newFile - 2)) {
-                if ((rowIndex == newRank + 1) || (rowIndex == newRank - 1)) {
+            // if pawn wants to cut someone
+            else
+            {
+                if ((newRank == rowIndex + 1 && newFile == columnIndex - 1) ||
+                    (newRank == rowIndex + 1 && newFile == columnIndex + 1))
                     return true;
-                }
+                else
+                    return false;
             }
+        }
+
+    // legality of Rooks
+    case 'R':
+        // Rook moves in the same row
+        if (newRank == rowIndex)
+        {
+            // now check if all the squares in bw source and destination are empty
+            columnOffset = biggerColumnIndex - smallerColumnIndex;
+            for (int i = 1; i < columnOffset; i++)
+            {
+                if (chessBoard[newRank][columnIndex + i].ifPresent == true)
+                    return false;
+            }
+            return true;
+        }
+        // rook moves in the same column
+        else if (newFile == columnIndex)
+        {
+            // now check if all the squares in bw source and destinations are empty
+            rowOffset = biggerRowIndex - smallerRowIndex;
+
+            for (int i = 1; i < rowOffset; i++)
+            {
+                if (chessBoard[rowIndex + i][newFile].ifPresent == true)
+                    return false;
+            }
+            return true;
+        }
+        else
             return false;
 
-            break;
+    // legality of Horse
+    case 'H':
+        // for horse we dont need to check the path towards the destination square
+        // also we already have checked if the destination square is empty or not using statusOfNewPos Function
 
-            // legality of bishop
-        case 'B':
-            // it moves diagonally
-            // make sure it moves diagonally
-            if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex) {
-                // checking if squares in the way are unoccupied
-                int a = rowIndex;
-                int b = columnIndex;
-                if (newRank < rowIndex && newFile < columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a--;
-                        b--;
-                    }
-                    return true;
-                }
-                if (newRank < rowIndex && newFile > columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a--;
-                        b++;
-                    }
-                    return true;
-                }
-                if (newRank > rowIndex && newFile < columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a++;
-                        b--;
-                    }
-                    return true;
-                }
-                if (newRank > rowIndex && newFile > columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a++;
-                        b++;
-                    }
-                    return true;
-                }
-            }
-
-                // if it doesn't move diagonal
-            else {
-                return false;
-            }
-            break;
-
-            // legality of Queen
-        case 'Q':
-            // if queen moves in same row
-            if (newRank == rowIndex) {
-                // now check if all the squares in bw source and destination are empty
-                int columnOffset = newFile - columnIndex;
-                for (int i = 0; i < columnOffset; i++) {
-                    if (chessBoard[newRank][columnIndex + i].ifPresent)
-                        return false;
-                }
+        // it moves one column and two rows away
+        if ((columnIndex == newFile + 1) || (columnIndex == newFile - 1))
+        {
+            if ((rowIndex == newRank + 2) || (rowIndex == newRank - 2))
+            {
                 return true;
             }
-            // if queen moves in the same column
-            if (newFile == columnIndex) {
-                // now check if all the squares in bw source and destinations are empty
-                int rowOffset = newFile - columnIndex;
-                for (int i = 0; i < rowOffset; i++) {
-                    if (chessBoard[rowIndex + i][newFile].ifPresent)
-                        return false;
-                }
+        }
+        // it moves one row and two columns away
+        else if ((columnIndex == newFile + 2) || (columnIndex == newFile - 2))
+        {
+            if ((rowIndex == newRank + 1) || (rowIndex == newRank - 1))
+            {
                 return true;
             }
-            // if queen moves diagonally
-            // make sure it moves diagonal
-            if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex) {
-                // checking if squares in the way are unoccupied
-                int a = rowIndex;
-                int b = columnIndex;
-                if (newRank < rowIndex && newFile < columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a--;
-                        b--;
-                    }
-                    return true;
-                }
-                if (newRank < rowIndex && newFile > columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a--;
-                        b++;
-                    }
-                    return true;
-                }
-                if (newRank > rowIndex && newFile < columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a++;
-                        b--;
-                    }
-                    return true;
-                }
-                if (newRank > rowIndex && newFile > columnIndex) {
-                    while (a == newRank && b == newFile) {
-                        if (chessBoard[a][b].ifPresent)
-                            return false;
-                        a++;
-                        b++;
-                    }
-                    return true;
-                }
-            }
-
+        }
+        // some other movement
+        else
             return false;
-            break;
 
-            // legality of King
-        case 'K':
-            int rowDelta = newRank - rowIndex;
-            int colDelta = newFile - columnIndex;
+    // legality of bishop
+    case 'B':
+        // it moves diagonally
+        // make sure it moves diagonally
+        if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex)
+        {
+            // checking if squares in the way are unoccupied
+            a = rowIndex;
+            b = columnIndex;
+            if (newRank < rowIndex && newFile < columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a--;
+                    b--;
+                }
+                return true;
+            }
+            if (newRank < rowIndex && newFile > columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a--;
+                    b++;
+                }
+                return true;
+            }
+            if (newRank > rowIndex && newFile < columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a++;
+                    b--;
+                }
+                return true;
+            }
+            if (newRank > rowIndex && newFile > columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a++;
+                    b++;
+                }
+                return true;
+            }
+        }
+        // if it doesn't move diagonal
+        else
+            return false;
 
-            // since king moves just one step, no need to check for obstructions
-            // the difference between the destination and the source must be bw -1 and 1 both included
-            return ((rowDelta >= -1) && (rowDelta <= 1)) && ((colDelta >= -1) && (colDelta <= 1));
+    // legality of Queen
+    case 'Q':
+        // if queen moves in same row
+        if (newRank == rowIndex)
+        {
+            // now check if all the squares in bw source and destination are empty
+            columnOffset = biggerColumnIndex - smallerColumnIndex;
+            for (int i = 1; i < columnOffset; i++)
+            {
+                if (chessBoard[newRank][columnIndex + i].ifPresent == true)
+                    return false;
+            }
+            return true;
+        }
+        // if queen moves in the same column
+        else if (newFile == columnIndex)
+        {
+            // now check if all the squares in bw source and destinations are empty
+            rowOffset = biggerRowIndex - smallerRowIndex;
+            for (int i = 1; i < rowOffset; i++)
+            {
+                if (chessBoard[rowIndex + i][newFile].ifPresent == true)
+                    return false;
+            }
+            return true;
+        }
+        // if queen moves diagonally
+        // make sure it moves diagonal
+        else if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex)
+        {
+            // checking if squares in the way are unoccupied
+            a = rowIndex;
+            b = columnIndex;
+            if (newRank < rowIndex && newFile < columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a--;
+                    b--;
+                }
+                return true;
+            }
+            if (newRank < rowIndex && newFile > columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a--;
+                    b++;
+                }
+                return true;
+            }
+            if (newRank > rowIndex && newFile < columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a++;
+                    b--;
+                }
+                return true;
+            }
+            if (newRank > rowIndex && newFile > columnIndex)
+            {
+                while (a == newRank && b == newFile)
+                {
+                    if (chessBoard[a][b].ifPresent == true)
+                        return false;
+                    a++;
+                    b++;
+                }
+                return true;
+            }
+        }
+        else
+            return false;
 
+    // legality of King
+    case 'K':
+        rowDelta = newRank - rowIndex;
+        colDelta = newFile - columnIndex;
+
+        // since king moves just one step, no need to check for obstructions
+        // the difference between the destination and the source must be bw -1 and 1 both included
+        if (((rowDelta >= -1) && (rowDelta <= 1)) && ((colDelta >= -1) && (colDelta <= 1)))
+            return true;
+        else
+            return false;
     }
-    return false;
 }
 
-// TO DO
-//check for check mate
-bool isItCheckMate() {
+//check for stale mate
+bool isItStaleMate()
+{
+    if (!canMove(whatColour)) //  white piece has no move possible
+    {
+        cout << "Its a Stale Mate!" << endl;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// check for check mate
+bool isItCheckMate() // eg. if whatcolor = white means next turn is of white
+{
+    if (isItCheck(whatColour)) //  if white color is in check
+    {
+        if (!canMove(whatColour)) //  white piece has no move possible inc the king
+        {
+            cout << "Its a Check Mate!" << endl;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+        return false;
+}
+
+// checks for Check
+bool isItCheck(char color)
+{
+    // working: find the coordinates of the king. then for every opposite color piece check validity/legality of piece to that destination!
+
+    // coordinates of the king
+    int kingRank, kingFile;
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            if (chessBoard[i][j].name == "wK" || chessBoard[i][j].name == "bK")
+            {
+                if (chessBoard[i][j].color == color)
+                {
+                    kingRank = i;
+                    kingFile = j;
+                }
+            }
+        }
+    }
+
+    // stores the opposite color
+    char oppColor;
+    if (color == 'W')
+        oppColor = 'B';
+    else
+        oppColor = 'W';
+
+    // now for each piece of other color; check if they can reach the king
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            if ((chessBoard[i][j].ifPresent == true) && (chessBoard[i][j].color = oppColor))
+            {
+                int extractedRank = i + 1;
+                char extractedFile = j + 65;
+                if (validityOfMove(kingRank, kingFile, extractedRank, extractedFile) == 1)
+                {
+                    cout << "Its a CHECK!" << endl;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+}
+
+// checks for other person's pieces i.e if they can move anywhere or not
+bool canMove(char color)
+{
+    // for each piece of specific color
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            if ((chessBoard[i][j].ifPresent == true) && (chessBoard[i][j].color = color)) // if piece found
+            {
+                // check if the found piece can move somewhere
+                for (int m = 0; m < 7; m++)
+                {
+                    for (int n = 0; n < 7; n++)
+                    {
+                        int extractedRank = i + 1;
+                        char extractedFile = j + 65;
+                        if (validityOfMove(m, n, extractedRank, extractedFile) && statusOfNewPos(m, n, extractedRank, extractedFile))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
     return false;
 }
 
 // MAIN FUNCTION
-void playGame() {
+void playGame(string player1, string player2, char player1color, char player2color)
+{
     // initialize the board
     initializeBoard();
     printBoard();
-
+    whatColour = 'W';
     // test conditions if the game is over or not
-    while (allowPlay()) {
+    while ((tempVariable = allowPlay()) == 1)
+    {
         move();
         printBoard();
+        whatColour = alternateTurn(); // W-----B
     }
 
+    // end results
+    if (tempVariable == -1)
+    {
+        cout << "Exceeded 100 moves! Its a DRAW!" << endl;
+    }
+    if (tempVariable == 2)
+    {
+        cout << "StaleMate! Its a DRAW!" << endl;
+    }
+    if (tempVariable == 0)
+    {
+        char oppColor;
+        if (whatColour == 'W')
+            oppColor = 'B';
+        else
+            oppColor = 'W';
+
+        if(oppColor==player1color)
+            cout << "Check Mate! Player" << player1 << "WINS!" << endl;
+        if(oppColor==player2color)
+            cout << "Check Mate! Player" << player2 << "WINS!" << endl;    
+    }
     cout << "Thanks for playing" << endl;
 }
 
 #endif //CHESS_PROJECT_DEFS_H
+
+
+
+
+////// BUGG : CHECK NOT WORKING
+/////  IF the king himself goes into getting checked then also it should say its a check
