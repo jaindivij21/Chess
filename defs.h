@@ -49,6 +49,8 @@ void extractArrayPos(char file, int rank);
 
 bool isItCheck();
 
+bool canKingMove();
+
 int rowIndex = 0;
 int columnIndex = 0;
 int biggerRowIndex;
@@ -874,12 +876,39 @@ bool isItCheckMate()
 {
     if (isItCheck() == true)
     {
-        return false;
-        // check for other conditions 1
+        // check if the king can move or not
+        if (canKingMove() == true)
+        {
+            // king it can move
+            return false;
+        }
+        // if king cannot move
+
+        // king aur piece ke beech me koi nahi aa sakta
+        if ()
+        {
+            // agar koi aa sakta hai
+            return false;
+        }
+        // koi beech me aa sakta hai
+
+        // can someone take out the piece that checked the king
+        if ()
+        {
+            // agr koi hai aesa jo cut kar sakta hai
+            return false;
+        }
+        // agr koi k=cut ni kar sakta
+        return true;
     }
     // check for other conditions 2
     else
         return false;
+}
+
+bool canKingMove()
+{
+
 }
 
 // checks for Check for current colour i.e turnOf colour
