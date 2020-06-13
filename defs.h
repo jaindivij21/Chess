@@ -14,14 +14,13 @@ using namespace std;
 
 // global variables
 int totalMoves = 0;
-int turnOf = 0; // 0 = white && 1 = black
+char turnOf = 'W'; // tells which color's turn it is!
 string tempPiece;
 char nameOfThePiece;
 int a, b;
 int rowDelta, colDelta;
 int columnOffset;
 int rowOffset;
-char whatColour;
 
 int tempVariable;
 
@@ -32,7 +31,7 @@ void printBoard();
 
 void move();
 
-char alternateTurn();
+void alternateTurn();
 
 bool statusOfNewPos(int newRank, int newFile, int oldRank, char oldFile);
 
@@ -48,9 +47,7 @@ int validityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
 void extractArrayPos(char file, int rank);
 
-bool canMove(char color);
-
-bool isItCheck(char color);
+bool isItCheck();
 
 int rowIndex = 0;
 int columnIndex = 0;
@@ -348,17 +345,12 @@ void extractArrayPos(char file, int rank)
 }
 
 // change turn after every ply
-char alternateTurn()
+void alternateTurn()
 {
     if (totalMoves == 0)
-        turnOf = 0;
+        turnOf = 'W';
     else
-        turnOf = !turnOf;
-
-    if (turnOf == 0)
-        return 'W';
-    else
-        return 'B';
+        turnOf = (turnOf == 'W') ? 'B' : 'W';
 }
 
 // function to execute move from one location to another
@@ -375,7 +367,7 @@ void move()
         do
         {
             cout << "Enter the ";
-            if (turnOf == 0)
+            if (turnOf == 'W')
             {
                 cout << "White";
             }
@@ -389,8 +381,9 @@ void move()
             cin >> oldPositionFile >> oldPositionRank;
 
             extractArrayPos(oldPositionFile, oldPositionRank);
-            if ((turnOf == 0 && chessBoard[rowIndex][columnIndex].color == 'W') ||
-                (turnOf == 1 && chessBoard[rowIndex][columnIndex].color == 'B'))
+
+            if ((turnOf == 'W' && chessBoard[rowIndex][columnIndex].color == 'W') ||
+                (turnOf == 'B' && chessBoard[rowIndex][columnIndex].color == 'B'))
             {
                 if (chessBoard[rowIndex][columnIndex].name != pieceToMove)
                 {
@@ -497,13 +490,13 @@ int allowPlay()
 }
 
 // check for validity
-int validityOfMove(int newRank, int newFile, int oldRank, char oldFile)
+int validityOfMove(int newRow, int newColumn, int oldRank, char oldFile) // newRow and newColumn are array indexes but oldRank and oldFile are RANK AND FILE respectively!
 {
     // check if the new position is not outside the array
-    if ((newRank >= 0 && newRank <= 7) && (newFile >= 0 && newFile <= 7))
+    if ((newRow >= 0 && newRow <= 7) && (newColumn >= 0 && newColumn <= 7))
     {
         // if yes, then check for the legality of the move
-        if (legalityOfMove(newRank, newFile, oldRank, oldFile))
+        if (legalityOfMove(newRow, newColumn, oldRank, oldFile))
             return 1;
         else
         {
@@ -517,9 +510,9 @@ int validityOfMove(int newRank, int newFile, int oldRank, char oldFile)
 }
 
 // checking the legality of the move wrt to the piece's rules and also check if something is blocking the way
-bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
+bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
 {
-    extractArrayPos(oldFile, oldRank); // NOW newRank, newFile, rowIndex, columnIndex
+    extractArrayPos(oldFile, oldRank); // NOW newRow, newColumn, rowIndex, columnIndex
     tempPiece = (chessBoard[rowIndex][columnIndex].name);
 
     if (tempPiece == "wP" || tempPiece == "bP")
@@ -547,10 +540,10 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
         nameOfThePiece = 'K';
     }
 
-    biggerRowIndex = max(rowIndex, newRank);
-    biggerColumnIndex = max(columnIndex, newFile);
-    smallerRowIndex = min(rowIndex, newRank);
-    smallerColumnIndex = min(columnIndex, newFile);
+    biggerRowIndex = max(rowIndex, newRow);
+    biggerColumnIndex = max(columnIndex, newColumn);
+    smallerRowIndex = min(rowIndex, newRow);
+    smallerColumnIndex = min(columnIndex, newColumn);
 
     switch (nameOfThePiece)
     {
@@ -560,9 +553,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
         if (chessBoard[rowIndex][columnIndex].color == 'W')
         {
             // if pawn is moving to an empty space; it can only move one space forward
-            if (chessBoard[newRank][newFile].ifPresent == false)
+            if (chessBoard[newRow][newColumn].ifPresent == false)
             {
-                if (newRank == rowIndex - 1 && newFile == columnIndex)
+                if (newRow == rowIndex - 1 && newColumn == columnIndex)
                     return true;
                 else
                     return false;
@@ -570,9 +563,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
             // if pawn wants to cut someone
             else
             {
-                if (newRank == rowIndex - 1)
+                if (newRow == rowIndex - 1)
                 {
-                    if (newFile == columnIndex - 1 || newFile == columnIndex + 1)
+                    if (newColumn == columnIndex - 1 || newColumn == columnIndex + 1)
                         return true;
                     else
                         return false;
@@ -584,9 +577,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
         if (chessBoard[rowIndex][columnIndex].color == 'B')
         {
             // if pawn is moving to an empty space; it can only move one space forward
-            if (chessBoard[newRank][newFile].ifPresent == false)
+            if (chessBoard[newRow][newColumn].ifPresent == false)
             {
-                if (newRank == rowIndex + 1 && newFile == columnIndex)
+                if (newRow == rowIndex + 1 && newColumn == columnIndex)
                     return true;
                 else
                     return false;
@@ -594,8 +587,8 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
             // if pawn wants to cut someone
             else
             {
-                if ((newRank == rowIndex + 1 && newFile == columnIndex - 1) ||
-                    (newRank == rowIndex + 1 && newFile == columnIndex + 1))
+                if ((newRow == rowIndex + 1 && newColumn == columnIndex - 1) ||
+                    (newRow == rowIndex + 1 && newColumn == columnIndex + 1))
                     return true;
                 else
                     return false;
@@ -605,29 +598,57 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
     // legality of Rooks
     case 'R':
         // Rook moves in the same row
-        if (newRank == rowIndex)
+        if (newRow == rowIndex)
         {
             // now check if all the squares in bw source and destination are empty
             columnOffset = biggerColumnIndex - smallerColumnIndex;
-            for (int i = 1; i < columnOffset; i++)
+
+            if (newColumn > columnIndex)
             {
-                if (chessBoard[newRank][columnIndex + i].ifPresent == true)
-                    return false;
+                for (int i = 1; i < columnOffset; i++)
+                {
+                    if (chessBoard[newRow][columnIndex + i].ifPresent == true)
+                        return false;
+                }
+                return true;
             }
-            return true;
+
+            if (newColumn < columnIndex)
+            {
+                for (int i = 1; i < columnOffset; i++)
+                {
+                    if (chessBoard[newRow][columnIndex - i].ifPresent == true)
+                        return false;
+                }
+                return true;
+            }
         }
+
         // rook moves in the same column
-        else if (newFile == columnIndex)
+        else if (newColumn == columnIndex)
         {
             // now check if all the squares in bw source and destinations are empty
             rowOffset = biggerRowIndex - smallerRowIndex;
 
-            for (int i = 1; i < rowOffset; i++)
+            if (newRow > rowIndex)
             {
-                if (chessBoard[rowIndex + i][newFile].ifPresent == true)
-                    return false;
+                for (int i = 1; i < rowOffset; i++)
+                {
+                    if (chessBoard[newRow + i][columnIndex].ifPresent == true)
+                        return false;
+                }
+                return true;
             }
-            return true;
+
+            if (newRow < rowIndex)
+            {
+                for (int i = 1; i < rowOffset; i++)
+                {
+                    if (chessBoard[newRow - i][columnIndex].ifPresent == true)
+                        return false;
+                }
+                return true;
+            }
         }
         else
             return false;
@@ -638,17 +659,17 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
         // also we already have checked if the destination square is empty or not using statusOfNewPos Function
 
         // it moves one column and two rows away
-        if ((columnIndex == newFile + 1) || (columnIndex == newFile - 1))
+        if ((columnIndex == newColumn + 1) || (columnIndex == newColumn - 1))
         {
-            if ((rowIndex == newRank + 2) || (rowIndex == newRank - 2))
+            if ((rowIndex == newRow + 2) || (rowIndex == newRow - 2))
             {
                 return true;
             }
         }
         // it moves one row and two columns away
-        else if ((columnIndex == newFile + 2) || (columnIndex == newFile - 2))
+        else if ((columnIndex == newColumn + 2) || (columnIndex == newColumn - 2))
         {
-            if ((rowIndex == newRank + 1) || (rowIndex == newRank - 1))
+            if ((rowIndex == newRow + 1) || (rowIndex == newRow - 1))
             {
                 return true;
             }
@@ -666,9 +687,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
             // checking if squares in the way are unoccupied
             a = rowIndex;
             b = columnIndex;
-            if (newRank < rowIndex && newFile < columnIndex)
+            if (newRow < rowIndex && newColumn < columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -677,9 +698,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank < rowIndex && newFile > columnIndex)
+            if (newRow < rowIndex && newColumn > columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -688,9 +709,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank > rowIndex && newFile < columnIndex)
+            if (newRow > rowIndex && newColumn < columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -699,9 +720,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank > rowIndex && newFile > columnIndex)
+            if (newRow > rowIndex && newColumn > columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -718,29 +739,59 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
     // legality of Queen
     case 'Q':
         // if queen moves in same row
-        if (newRank == rowIndex)
+        if (newRow == rowIndex)
         {
             // now check if all the squares in bw source and destination are empty
             columnOffset = biggerColumnIndex - smallerColumnIndex;
-            for (int i = 1; i < columnOffset; i++)
+
+            if (newColumn > columnIndex)
             {
-                if (chessBoard[newRank][columnIndex + i].ifPresent == true)
-                    return false;
+                for (int i = 1; i < columnOffset; i++)
+                {
+                    if (chessBoard[newRow][columnIndex + i].ifPresent == true)
+                        return false;
+                }
+                return true;
             }
-            return true;
+
+            if (newColumn < columnIndex)
+            {
+                for (int i = 1; i < columnOffset; i++)
+                {
+                    if (chessBoard[newRow][columnIndex - i].ifPresent == true)
+                        return false;
+                }
+                return true;
+            }
         }
+
         // if queen moves in the same column
-        else if (newFile == columnIndex)
+        else if (newColumn == columnIndex)
         {
             // now check if all the squares in bw source and destinations are empty
             rowOffset = biggerRowIndex - smallerRowIndex;
-            for (int i = 1; i < rowOffset; i++)
+
+            if (newRow > rowIndex)
             {
-                if (chessBoard[rowIndex + i][newFile].ifPresent == true)
-                    return false;
+                for (int i = 1; i < rowOffset; i++)
+                {
+                    if (chessBoard[newRow + i][columnIndex].ifPresent == true)
+                        return false;
+                }
+                return true;
             }
-            return true;
+
+            if (newRow < rowIndex)
+            {
+                for (int i = 1; i < rowOffset; i++)
+                {
+                    if (chessBoard[newRow - i][columnIndex].ifPresent == true)
+                        return false;
+                }
+                return true;
+            }
         }
+
         // if queen moves diagonally
         // make sure it moves diagonal
         else if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex)
@@ -748,9 +799,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
             // checking if squares in the way are unoccupied
             a = rowIndex;
             b = columnIndex;
-            if (newRank < rowIndex && newFile < columnIndex)
+            if (newRow < rowIndex && newColumn < columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -759,9 +810,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank < rowIndex && newFile > columnIndex)
+            if (newRow < rowIndex && newColumn > columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -770,9 +821,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank > rowIndex && newFile < columnIndex)
+            if (newRow > rowIndex && newColumn < columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -781,9 +832,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
                 }
                 return true;
             }
-            if (newRank > rowIndex && newFile > columnIndex)
+            if (newRow > rowIndex && newColumn > columnIndex)
             {
-                while (a == newRank && b == newFile)
+                while (a == newRow && b == newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -798,8 +849,8 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
 
     // legality of King
     case 'K':
-        rowDelta = newRank - rowIndex;
-        colDelta = newFile - columnIndex;
+        rowDelta = newRow - rowIndex;
+        colDelta = newColumn - columnIndex;
 
         // since king moves just one step, no need to check for obstructions
         // the difference between the destination and the source must be bw -1 and 1 both included
@@ -810,118 +861,79 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile)
     }
 }
 
+// TO DO
 //check for stale mate
 bool isItStaleMate()
 {
-    if (!canMove(whatColour)) //  white piece has no move possible
-    {
-        cout << "Its a Stale Mate!" << endl;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
+// TO DO
 // check for check mate
-bool isItCheckMate() // eg. if whatcolor = white means next turn is of white
+bool isItCheckMate()
 {
-    if (isItCheck(whatColour)) //  if white color is in check
+    if (isItCheck() == true)
     {
-        if (!canMove(whatColour)) //  white piece has no move possible inc the king
-        {
-            cout << "Its a Check Mate!" << endl;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return false;
+        // check for other conditions 1
     }
+    // check for other conditions 2
     else
         return false;
 }
 
-// checks for Check
-bool isItCheck(char color)
+// checks for Check for current colour i.e turnOf colour
+bool isItCheck()
 {
     // working: find the coordinates of the king. then for every opposite color piece check validity/legality of piece to that destination!
 
     // coordinates of the king
-    int kingRank, kingFile;
-    for (int i = 0; i < 7; i++)
+    int kingColumn = 0;
+    int kingRow = 0;
+
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < 8; j++)
         {
-            if (chessBoard[i][j].name == "wK" || chessBoard[i][j].name == "bK")
+            if ((chessBoard[i][j].name == "wK" || chessBoard[i][j].name == "bK"))
             {
-                if (chessBoard[i][j].color == color)
+                if (chessBoard[i][j].color == turnOf)
                 {
-                    kingRank = i;
-                    kingFile = j;
+                    kingRow = i;
+                    kingColumn = j;
                 }
             }
         }
     }
 
     // stores the opposite color
-    char oppColor;
-    if (color == 'W')
-        oppColor = 'B';
-    else
-        oppColor = 'W';
+    char oppColor = (turnOf == 'W') ? 'B' : 'W';
 
     // now for each piece of other color; check if they can reach the king
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < 8; j++)
         {
-            if ((chessBoard[i][j].ifPresent == true) && (chessBoard[i][j].color = oppColor))
+            if ((chessBoard[i][j].ifPresent == true) && (chessBoard[i][j].color == oppColor))
             {
                 int extractedRank = i + 1;
                 char extractedFile = j + 65;
-                if (validityOfMove(kingRank, kingFile, extractedRank, extractedFile) == 1)
+
+                if (validityOfMove(kingRow, kingColumn, extractedRank, extractedFile) == 1)
                 {
-                    cout << "Its a CHECK!" << endl;
+                    cout << "Its a CHECK! for"
+                         << " " << turnOf << "\n\n"
+                         << endl;
                     return true;
                 }
                 else
                 {
-                    return false;
+                    continue;
                 }
             }
             else
             {
-                return false;
-            }
-        }
-    }
-}
-
-// checks for other person's pieces i.e if they can move anywhere or not
-bool canMove(char color)
-{
-    // for each piece of specific color
-    for (int i = 0; i < 7; i++)
-    {
-        for (int j = 0; j < 7; j++)
-        {
-            if ((chessBoard[i][j].ifPresent == true) && (chessBoard[i][j].color = color)) // if piece found
-            {
-                // check if the found piece can move somewhere
-                for (int m = 0; m < 7; m++)
-                {
-                    for (int n = 0; n < 7; n++)
-                    {
-                        int extractedRank = i + 1;
-                        char extractedFile = j + 65;
-                        if (validityOfMove(m, n, extractedRank, extractedFile) && statusOfNewPos(m, n, extractedRank, extractedFile))
-                        {
-                            return true;
-                        }
-                    }
-                }
+                continue;
             }
         }
     }
@@ -934,13 +946,13 @@ void playGame(string player1, string player2, char player1color, char player2col
     // initialize the board
     initializeBoard();
     printBoard();
-    whatColour = 'W';
+
     // test conditions if the game is over or not
     while ((tempVariable = allowPlay()) == 1)
     {
         move();
         printBoard();
-        whatColour = alternateTurn(); // W-----B
+        alternateTurn(); // W-----B
     }
 
     // end results
@@ -955,23 +967,30 @@ void playGame(string player1, string player2, char player1color, char player2col
     if (tempVariable == 0)
     {
         char oppColor;
-        if (whatColour == 'W')
+        if (turnOf == 'W')
             oppColor = 'B';
         else
             oppColor = 'W';
 
-        if(oppColor==player1color)
+        if (oppColor == player1color)
             cout << "Check Mate! Player" << player1 << "WINS!" << endl;
-        if(oppColor==player2color)
-            cout << "Check Mate! Player" << player2 << "WINS!" << endl;    
+        if (oppColor == player2color)
+            cout << "Check Mate! Player" << player2 << "WINS!" << endl;
     }
     cout << "Thanks for playing" << endl;
 }
 
 #endif //CHESS_PROJECT_DEFS_H
 
+// Condition for check mate is totally  wrong!
+// check mate happens when
+// 1) its a check
+// 1a) king cannot move
+// 1b) no one comes bw the piece that checked and the king
+// 1c) someone can take out the piece that checked
+// 2) if some one walks into a check himself i.e king gets in check himself
 
+// stalemate logic is all wrong
 
-
-////// BUGG : CHECK NOT WORKING
-/////  IF the king himself goes into getting checked then also it should say its a check
+// BUGS:
+//None Right now!
