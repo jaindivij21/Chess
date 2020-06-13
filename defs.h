@@ -18,11 +18,20 @@ char turnOf = 'W'; // tells which color's turn it is!
 string tempPiece;
 char nameOfThePiece;
 int a, b;
+int c, d;
 int rowDelta, colDelta;
 int columnOffset;
 int rowOffset;
-
+int columnOffset2;
+int rowOffset2;
+int kingColumn = 0;
+int kingRow = 0;
 int tempVariable;
+char oppColor;
+
+// indexes of  piece which checked
+int checkPieceRow;
+int checkPieceColumn;
 
 // initializing functions
 void initializeBoard();
@@ -51,12 +60,21 @@ bool isItCheck();
 
 bool canKingMove();
 
+bool checkAtSpecificPosition(int i, int j);
+
+bool canIntervene();
+
 int rowIndex = 0;
 int columnIndex = 0;
 int biggerRowIndex;
 int biggerColumnIndex;
 int smallerRowIndex;
 int smallerColumnIndex;
+
+int biggerRowIndex2;
+int biggerColumnIndex2;
+int smallerRowIndex2;
+int smallerColumnIndex2;
 
 void playGame(string player1, string player2, char player1color, char player2color);
 
@@ -687,12 +705,12 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
         if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex)
         {
             // checking if squares in the way are unoccupied
-            a = rowIndex;
-            b = columnIndex;
             if (newRow < rowIndex && newColumn < columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                while (a != newRow && b != newColumn)
                 {
+                    a = rowIndex - 1;
+                    b = columnIndex - 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -702,7 +720,9 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow < rowIndex && newColumn > columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                a = rowIndex - 1;
+                b = columnIndex + 1;
+                while (a != newRow && b != newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -713,7 +733,9 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn < columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                a = rowIndex + 1;
+                b = columnIndex - 1;
+                while (a != newRow && b != newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -724,7 +746,9 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn > columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                a = rowIndex + 1;
+                b = columnIndex + 1;
+                while (a != newRow && b != newColumn)
                 {
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
@@ -799,12 +823,12 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
         else if (biggerRowIndex - smallerRowIndex == biggerColumnIndex - smallerColumnIndex)
         {
             // checking if squares in the way are unoccupied
-            a = rowIndex;
-            b = columnIndex;
             if (newRow < rowIndex && newColumn < columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                while (a != newRow && b != newColumn)
                 {
+                    a = rowIndex - 1;
+                    b = columnIndex - 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -814,8 +838,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow < rowIndex && newColumn > columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                while (a != newRow && b != newColumn)
                 {
+                    a = rowIndex - 1;
+                    b = columnIndex + 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -825,8 +851,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn < columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                while (a != newRow && b != newColumn)
                 {
+                    a = rowIndex + 1;
+                    b = columnIndex - 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a++;
@@ -836,8 +864,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn > columnIndex)
             {
-                while (a == newRow && b == newColumn)
+                while (a != newRow && b != newColumn)
                 {
+                    a = rowIndex + 1;
+                    b = columnIndex + 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a++;
@@ -876,6 +906,10 @@ bool isItCheckMate()
 {
     if (isItCheck() == true)
     {
+        cout << "Its a CHECK! for"
+             << " " << turnOf << "\n\n"
+             << endl;
+
         // check if the king can move or not
         if (canKingMove() == true)
         {
@@ -885,7 +919,7 @@ bool isItCheckMate()
         // if king cannot move
 
         // king aur piece ke beech me koi nahi aa sakta
-        if ()
+        if (canIntervene() == true)
         {
             // agar koi aa sakta hai
             return false;
@@ -899,6 +933,7 @@ bool isItCheckMate()
             return false;
         }
         // agr koi k=cut ni kar sakta
+
         return true;
     }
     // check for other conditions 2
@@ -906,9 +941,358 @@ bool isItCheckMate()
         return false;
 }
 
+// once its check if the king can change its position
 bool canKingMove()
 {
+    // get the king coordinates i.e kingRow kingColumn
 
+    // check for the king i.e if it can move anywhere on the board which place it not a check
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            int extractedRank = kingRow + 1;
+            char extractedFile = kingColumn + 65;
+
+            // if there is some valid move
+            if (validityOfMove(i, j, extractedRank, extractedFile) == 1)
+            {
+                // if there is a valid move check if its also not another check position i.e king wont be checked at i and j also
+                if (checkAtSpecificPosition(i, j) == true)
+                {
+                    continue;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    // checked for all possible movements for king and it can't move anywhere
+    return false;
+}
+
+// if its a check at a specific condition
+bool checkAtSpecificPosition(int i, int j)
+{
+    for (int m = 0; m < 8; m++)
+    {
+        for (int n = 0; n < 8; n++)
+        {
+            if ((chessBoard[m][n].ifPresent == true) && (chessBoard[m][n].color == oppColor))
+            {
+                int extractedRank = m + 1;
+                char extractedFile = n + 65;
+
+                if (validityOfMove(i, j, extractedRank, extractedFile) == 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    return false;
+}
+
+// checks if any piece of the color being checked can come in between king and piece which checked
+bool canIntervene()
+{
+    // we need coordinates of the king i.e kingRow and kingColumn
+    // we need coordinates and the type of piece which checked i.e checkPieceRow and checkPieceColumn
+    string pieceType = (chessBoard[checkPieceRow][checkPieceColumn].name).substr(1, 1);
+    biggerRowIndex2 = max(checkPieceRow, kingRow);
+    biggerColumnIndex2 = max(checkPieceColumn, kingColumn);
+    smallerRowIndex2 = min(checkPieceRow, kingRow);
+    smallerColumnIndex2 = min(checkPieceColumn, kingColumn);
+
+    int extractedRank;
+    char extractedFile;
+
+    if (kingRow == checkPieceRow)
+    {
+        columnOffset2 = biggerColumnIndex2 - smallerColumnIndex2;
+
+        if (kingColumn > checkPieceColumn)
+        {
+            for (int i = 1; i < columnOffset2; i++)
+            {
+                // checking for each turnOf color piece if it can come bw king and the piece
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(kingRow, (checkPieceColumn + i), extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                            continue;
+                    }
+                }
+            }
+            return false;
+        }
+
+        if (kingColumn < checkPieceColumn)
+        {
+            for (int i = 1; i < columnOffset2; i++)
+            {
+                // checking for each turnOf color piece if it can come bw king and the piece
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(kingRow, (checkPieceColumn - i), extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                            continue;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    else if (kingColumn == checkPieceColumn)
+    {
+        rowOffset2 = biggerRowIndex2 - smallerRowIndex2;
+
+        if (kingRow > checkPieceRow)
+        {
+            for (int i = 1; i < rowOffset2; i++)
+            {
+                // checking for each turnOf color piece if it can come bw king and the piece
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove((checkPieceRow + i), kingColumn, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                            continue;
+                    }
+                }
+            }
+            return false;
+        }
+
+        if (kingColumn < checkPieceColumn)
+        {
+            for (int i = 1; i < rowOffset2; i++)
+            {
+                // checking for each turnOf color piece if it can come bw king and the piece
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove((checkPieceRow - i), kingColumn, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                            continue;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    else
+    {
+        if (kingRow < checkPieceRow && kingColumn < checkPieceColumn)
+        {
+            c = checkPieceRow - 1;
+            d = checkPieceColumn - 1;
+            while (c != kingRow && d != kingColumn)
+            {
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+                c--;
+                d--;
+            }
+            return false;
+        }
+
+        if (kingRow < checkPieceRow && kingColumn > checkPieceColumn)
+        {
+            c = checkPieceRow - 1;
+            d = checkPieceColumn + 1;
+            while (c != kingRow && d != kingColumn)
+            {
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+                c--;
+                d++;
+            }
+            return false;
+        }
+
+        if (kingRow > checkPieceRow && kingColumn < checkPieceColumn)
+        {
+            c = checkPieceRow + 1;
+            d = checkPieceColumn - 1;
+            while (c != kingRow && d != kingColumn)
+            {
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+                c++;
+                d--;
+            }
+            return false;
+        }
+        
+        if (kingRow > checkPieceRow && kingColumn > checkPieceColumn)
+        {
+            c = checkPieceRow + 1;
+            d = checkPieceColumn + 1;
+            while (c != kingRow && d != kingColumn)
+            {
+                for (int m = 0; m < 8; m++)
+                {
+                    for (int n = 0; n < 8; n++)
+                    {
+                        if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
+                        {
+                            extractedRank = m + 1;
+                            extractedFile = n + 65;
+                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+                c++;
+                d++;
+            }
+            return false;
+        }
+    }
 }
 
 // checks for Check for current colour i.e turnOf colour
@@ -917,9 +1301,6 @@ bool isItCheck()
     // working: find the coordinates of the king. then for every opposite color piece check validity/legality of piece to that destination!
 
     // coordinates of the king
-    int kingColumn = 0;
-    int kingRow = 0;
-
     for (int i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
@@ -936,7 +1317,7 @@ bool isItCheck()
     }
 
     // stores the opposite color
-    char oppColor = (turnOf == 'W') ? 'B' : 'W';
+    oppColor = (turnOf == 'W') ? 'B' : 'W';
 
     // now for each piece of other color; check if they can reach the king
     for (int i = 0; i < 8; i++)
@@ -950,9 +1331,8 @@ bool isItCheck()
 
                 if (validityOfMove(kingRow, kingColumn, extractedRank, extractedFile) == 1)
                 {
-                    cout << "Its a CHECK! for"
-                         << " " << turnOf << "\n\n"
-                         << endl;
+                    checkPieceRow = extractedRank - 1;
+                    checkPieceColumn = extractedFile - 65;
                     return true;
                 }
                 else
@@ -995,15 +1375,15 @@ void playGame(string player1, string player2, char player1color, char player2col
     }
     if (tempVariable == 0)
     {
-        char oppColor;
+        char oppoColor;
         if (turnOf == 'W')
-            oppColor = 'B';
+            oppoColor = 'B';
         else
-            oppColor = 'W';
+            oppoColor = 'W';
 
-        if (oppColor == player1color)
+        if (oppoColor == player1color)
             cout << "Check Mate! Player" << player1 << "WINS!" << endl;
-        if (oppColor == player2color)
+        if (oppoColor == player2color)
             cout << "Check Mate! Player" << player2 << "WINS!" << endl;
     }
     cout << "Thanks for playing" << endl;
@@ -1011,11 +1391,11 @@ void playGame(string player1, string player2, char player1color, char player2col
 
 #endif //CHESS_PROJECT_DEFS_H
 
-// Condition for check mate is totally  wrong!
-// check mate happens when
-// 1) its a check
-// 1a) king cannot move
-// 1b) no one comes bw the piece that checked and the king
+
+// check mate happens when 
+// 1) its a check                                                                  DONE
+// 1a) king cannot move                                                            DONE
+// 1b) no one comes bw the piece that checked and the king                         DONE
 // 1c) someone can take out the piece that checked
 // 2) if some one walks into a check himself i.e king gets in check himself
 
