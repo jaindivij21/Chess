@@ -26,7 +26,7 @@ int columnOffset2;
 int rowOffset2;
 int kingColumn = 0;
 int kingRow = 0;
-int tempVariable;
+int tempVariable = 100;
 char oppColor;
 
 // indexes of  piece which checked
@@ -50,7 +50,9 @@ bool legalityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
 bool isItCheckMate();
 
-bool isItStaleMate();
+void isKingDead();
+int whiteKing = 0;
+int blackKing = 0;
 
 int validityOfMove(int newRank, int newFile, int oldRank, char oldFile);
 
@@ -63,6 +65,8 @@ bool canKingMove();
 bool checkAtSpecificPosition(int i, int j);
 
 bool canIntervene();
+
+bool canCut();
 
 int rowIndex = 0;
 int columnIndex = 0;
@@ -501,12 +505,15 @@ int allowPlay()
 {
     if (totalMoves == 100)
         return -1;
-    else if (isItCheckMate() == true)
+    if (isItCheckMate() == true)
         return 0;
-    else if (isItStaleMate() == true)
-        return 2;
-    else
-        return 1;
+    if (1)
+    {
+        isKingDead();
+        if (whiteKing == 1 || blackKing == 1)
+            return 2;
+    }
+    return 1;
 }
 
 // check for validity
@@ -517,7 +524,9 @@ int validityOfMove(int newRow, int newColumn, int oldRank, char oldFile) // newR
     {
         // if yes, then check for the legality of the move
         if (legalityOfMove(newRow, newColumn, oldRank, oldFile))
+        {
             return 1;
+        }
         else
         {
             return 0;
@@ -654,7 +663,7 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             {
                 for (int i = 1; i < rowOffset; i++)
                 {
-                    if (chessBoard[newRow + i][columnIndex].ifPresent == true)
+                    if (chessBoard[rowIndex + i][columnIndex].ifPresent == true)
                         return false;
                 }
                 return true;
@@ -664,7 +673,7 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             {
                 for (int i = 1; i < rowOffset; i++)
                 {
-                    if (chessBoard[newRow - i][columnIndex].ifPresent == true)
+                    if (chessBoard[rowIndex - i][columnIndex].ifPresent == true)
                         return false;
                 }
                 return true;
@@ -679,24 +688,23 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
         // also we already have checked if the destination square is empty or not using statusOfNewPos Function
 
         // it moves one column and two rows away
-        if ((columnIndex == newColumn + 1) || (columnIndex == newColumn - 1))
+        if ((newColumn == columnIndex + 1) || (newColumn == columnIndex - 1))
         {
-            if ((rowIndex == newRow + 2) || (rowIndex == newRow - 2))
+            if ((newRow == rowIndex + 2) || (newRow == rowIndex - 2))
             {
                 return true;
             }
         }
         // it moves one row and two columns away
-        else if ((columnIndex == newColumn + 2) || (columnIndex == newColumn - 2))
+        if ((newColumn == columnIndex + 2) || (newColumn == columnIndex - 2))
         {
-            if ((rowIndex == newRow + 1) || (rowIndex == newRow - 1))
+            if ((newRow == rowIndex + 1) || (newRow == rowIndex- 1))
             {
                 return true;
             }
         }
         // some other movement
-        else
-            return false;
+        return false;
 
     // legality of bishop
     case 'B':
@@ -707,10 +715,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             // checking if squares in the way are unoccupied
             if (newRow < rowIndex && newColumn < columnIndex)
             {
+                a = rowIndex - 1;
+                b = columnIndex - 1;
                 while (a != newRow && b != newColumn)
                 {
-                    a = rowIndex - 1;
-                    b = columnIndex - 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -801,7 +809,7 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             {
                 for (int i = 1; i < rowOffset; i++)
                 {
-                    if (chessBoard[newRow + i][columnIndex].ifPresent == true)
+                    if (chessBoard[rowIndex + i][columnIndex].ifPresent == true)
                         return false;
                 }
                 return true;
@@ -811,8 +819,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             {
                 for (int i = 1; i < rowOffset; i++)
                 {
-                    if (chessBoard[newRow - i][columnIndex].ifPresent == true)
+                    if (chessBoard[rowIndex - i][columnIndex].ifPresent == true)
+                    {
                         return false;
+                    }
                 }
                 return true;
             }
@@ -825,10 +835,11 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             // checking if squares in the way are unoccupied
             if (newRow < rowIndex && newColumn < columnIndex)
             {
+
+                a = rowIndex - 1;
+                b = columnIndex - 1;
                 while (a != newRow && b != newColumn)
                 {
-                    a = rowIndex - 1;
-                    b = columnIndex - 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -838,10 +849,11 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow < rowIndex && newColumn > columnIndex)
             {
+
+                a = rowIndex - 1;
+                b = columnIndex + 1;
                 while (a != newRow && b != newColumn)
                 {
-                    a = rowIndex - 1;
-                    b = columnIndex + 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a--;
@@ -851,10 +863,11 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn < columnIndex)
             {
+                a = rowIndex + 1;
+                b = columnIndex - 1;
                 while (a != newRow && b != newColumn)
                 {
-                    a = rowIndex + 1;
-                    b = columnIndex - 1;
+
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a++;
@@ -864,10 +877,10 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
             }
             if (newRow > rowIndex && newColumn > columnIndex)
             {
+                a = rowIndex + 1;
+                b = columnIndex + 1;
                 while (a != newRow && b != newColumn)
                 {
-                    a = rowIndex + 1;
-                    b = columnIndex + 1;
                     if (chessBoard[a][b].ifPresent == true)
                         return false;
                     a++;
@@ -893,14 +906,40 @@ bool legalityOfMove(int newRow, int newColumn, int oldRank, char oldFile)
     }
 }
 
-// TO DO
-//check for stale mate
-bool isItStaleMate()
+//check if the king is dead
+void isKingDead()
 {
-    return false;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].ifPresent == true && chessBoard[i][j].name == "wK")
+            {
+                whiteKing = 2;
+                i = j = 8;
+                break;
+            }
+        }
+    }
+    if (whiteKing != 2)
+        whiteKing = 1;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].ifPresent == true && chessBoard[i][j].name == "bK")
+            {
+                blackKing = 2;
+                i = j = 8;
+                break;
+            }
+        }
+    }
+    if (blackKing != 2)
+        blackKing = 1;
 }
 
-// TO DO
 // check for check mate
 bool isItCheckMate()
 {
@@ -927,7 +966,7 @@ bool isItCheckMate()
         // koi beech me aa sakta hai
 
         // can someone take out the piece that checked the king
-        if ()
+        if (canCut() == true)
         {
             // agr koi hai aesa jo cut kar sakta hai
             return false;
@@ -955,7 +994,7 @@ bool canKingMove()
             char extractedFile = kingColumn + 65;
 
             // if there is some valid move
-            if (validityOfMove(i, j, extractedRank, extractedFile) == 1)
+            if (validityOfMove(i, j, extractedRank, extractedFile) == 1 && statusOfNewPos(i, j, extractedRank, extractedFile) == true)
             {
                 // if there is a valid move check if its also not another check position i.e king wont be checked at i and j also
                 if (checkAtSpecificPosition(i, j) == true)
@@ -1036,15 +1075,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(kingRow, (checkPieceColumn + i), extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(kingRow, (checkPieceColumn + i), extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1066,15 +1112,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(kingRow, (checkPieceColumn - i), extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(kingRow, (checkPieceColumn - i), extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1101,15 +1154,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove((checkPieceRow + i), kingColumn, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove((checkPieceRow + i), kingColumn, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1131,15 +1191,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove((checkPieceRow - i), kingColumn, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove((checkPieceRow - i), kingColumn, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1165,15 +1232,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1200,15 +1274,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1235,15 +1316,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1257,7 +1345,7 @@ bool canIntervene()
             }
             return false;
         }
-        
+
         if (kingRow > checkPieceRow && kingColumn > checkPieceColumn)
         {
             c = checkPieceRow + 1;
@@ -1270,15 +1358,22 @@ bool canIntervene()
                     {
                         if (chessBoard[m][n].ifPresent == true && chessBoard[m][n].color == turnOf)
                         {
-                            extractedRank = m + 1;
-                            extractedFile = n + 65;
-                            if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                            if (chessBoard[m][n].name == "wK" || chessBoard[m][n].name == "bK")
                             {
-                                return true;
+                                continue;
                             }
                             else
                             {
-                                continue;
+                                extractedRank = m + 1;
+                                extractedFile = n + 65;
+                                if (validityOfMove(c, d, extractedRank, extractedFile) == true)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -1293,6 +1388,38 @@ bool canIntervene()
             return false;
         }
     }
+}
+
+// if the piece that checked king can be taken down
+bool canCut()
+{
+    int extractedRank;
+    char extractedFile;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].ifPresent == true && chessBoard[i][j].color == turnOf)
+            {
+                extractedRank = i + 1;
+                extractedFile = j + 65;
+                if (validityOfMove(checkPieceRow, checkPieceColumn, extractedRank, extractedFile) == true)
+                {
+                    return true;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    return false;
 }
 
 // checks for Check for current colour i.e turnOf colour
@@ -1318,7 +1445,6 @@ bool isItCheck()
 
     // stores the opposite color
     oppColor = (turnOf == 'W') ? 'B' : 'W';
-
     // now for each piece of other color; check if they can reach the king
     for (int i = 0; i < 8; i++)
     {
@@ -1371,7 +1497,10 @@ void playGame(string player1, string player2, char player1color, char player2col
     }
     if (tempVariable == 2)
     {
-        cout << "StaleMate! Its a DRAW!" << endl;
+        if (whiteKing == 1)
+            cout << "White King Died! Black Player WINS!" << endl;
+        if (blackKing == 1)
+            cout << "Black King Died! White Player WINS!" << endl;
     }
     if (tempVariable == 0)
     {
@@ -1382,24 +1511,11 @@ void playGame(string player1, string player2, char player1color, char player2col
             oppoColor = 'W';
 
         if (oppoColor == player1color)
-            cout << "Check Mate! Player" << player1 << "WINS!" << endl;
+            cout << "Check Mate! Player " << player1 << " WINS!" << endl;
         if (oppoColor == player2color)
-            cout << "Check Mate! Player" << player2 << "WINS!" << endl;
+            cout << "Check Mate! Player " << player2 << " WINS!" << endl;
     }
     cout << "Thanks for playing" << endl;
 }
 
-#endif //CHESS_PROJECT_DEFS_H
-
-
-// check mate happens when 
-// 1) its a check                                                                  DONE
-// 1a) king cannot move                                                            DONE
-// 1b) no one comes bw the piece that checked and the king                         DONE
-// 1c) someone can take out the piece that checked
-// 2) if some one walks into a check himself i.e king gets in check himself
-
-// stalemate logic is all wrong
-
-// BUGS:
-//None Right now!
+#endif //CHESS_PROJECT_DEFS_Hv 
